@@ -1,7 +1,6 @@
 // get inquirer
 const mysql = require('mysql2')
 const inquirer = require('inquirer')
-const actions = require('./actions')
 const cTable = require('console.table')
 // create the connection to database
 const connection = mysql.createConnection({
@@ -48,11 +47,10 @@ function promptUserAction() {
           break
         case 'Add a Role':
           addRole()
-
           break
         case 'Add an Employee':
           console.log('Add an employee')
-          // addEmployee()
+          addEmployee()
           break
         case 'Update an Employee Role':
           // updateEmployeeRole();
@@ -61,7 +59,7 @@ function promptUserAction() {
         case 'Exit Employee Tracker':
           console.log('Thanks for using the Employee Tracker.')
           connection.end()
-          // break
+        // break
       }
     })
 }
@@ -69,8 +67,8 @@ function promptUserAction() {
 viewAllDepartments = () => {
   connection.query('SELECT * FROM departments', function (err, results) {
     if (err) throw err
-    console.log('All Departments \n')
-    console.table(results)
+    const table = cTable.getTable('All Departments', results)
+    console.log(table)
     promptUserAction()
   })
 }
@@ -84,8 +82,8 @@ viewAllRoles = () => {
   ORDER BY departments.name;`
   connection.query(query, function (err, results) {
     if (err) throw err
-    console.log('All Roles \n')
-    console.table(results)
+    const table = cTable.getTable('All Roles', results)
+    console.log(table)
     promptUserAction()
   })
 }
@@ -101,66 +99,127 @@ viewAllEmployees = () => {
 
   connection.query(query, function (err, results) {
     if (err) throw err
-    console.log('All Employees \n')
-    console.table(results)
+    const table = cTable.getTable('All Employees', results)
+    console.log(table)
     promptUserAction()
   })
 }
 
 //add a role
 // enter the name, salary, and department for the role and that role is added to the database
-addRole = () => {
-  //map over all departments and pull out name and id... set it equal to variable sot hat every time you add new dept, it'll also add it here.
-  //variable will be array of objects and that will be what to add to line 131 instead of 
 
-  //google up .map 
-
-  inquirer
-    .prompt([
-      {
-        type: 'input',
-        name: 'job_title',
-        message: 'What is the job title?',
-      },
-      {
-        type: 'number',
-        name: 'salary',
-        message: 'Enter the annual salary',
-      },
-      {
-        type: 'list',
-        name: 'department',
-        message: 'Select Department:',
-        choices: ['Sales', 'Engineering', 'Finance', 'Legal'],
-      },
-    ])
-    .then((result) => {
-      if (result.department === 'Sales') {
-        return (result.department = 1)
-      }
-      if (result.department === 'Engineering') {
-        return (result.department = 2)
-      }
-      if (result.department === 'Finance') {
-        return (result.department = 3)
-      }
-      if (result.department === 'Legal') {
-        return (result.department = 4)
-      }
-
-      
-      connection.query('Select * FROM roles', function (error, rows) {
-        if (err) throw err
-    
-      let query = `
-      INSERT INTO roles
-      VALUES (${result.job_title}, ${result.salary}, ${result.department_id}) `
-      connection.query(query, function (err, result) {
-        if (err) throw err
-        console.log('All Employees \n')
-        console.table(result)
-        promptUserAction()
+const addRole = function () {
+  connection
+    .promise()
+    .query('SELECT name, id FROM departments')
+    .then((rows) => {
+      const depts = rows[0].map((row) => {
+        return {
+          name: row.name,
+          value: row.id,
+        }
       })
+      inquirer
+        .prompt([
+          {
+            type: 'input',
+            name: 'title',
+            message: 'What is the job title?',
+          },
+          {
+            type: 'number',
+            name: 'salary',
+            message: 'Enter the annual salary',
+          },
+          {
+            type: 'list',
+            name: 'department_id',
+            message: 'Select Department:',
+            choices: depts,
+          },
+        ])
+        .then((newRole) => {
+          connection.promise().query('INSERT INTO roles SET ?', newRole)
+        })
+        .then(() => {
+          viewAllRoles()
+          promptUserAction()
+        })
+    })
+}
+
+// add an employee
+// enter the employee’s first name, last name, role, and manager
+// that employee is added to the database
+const addEmployee = function () {
+  connection
+    .promise()
+    .query('SELECT title, id FROM roles')
+    .then((rows) => {
+      const roles = rows[0].map((row) => {
+        return {
+          name: row.title,
+          value: row.id,
+        }
+      })
+      inquirer
+        .prompt([
+          {
+            type: 'input',
+            name: 'first_name',
+            message: "What is the employee's first name?",
+          },
+          {
+            type: 'input',
+            name: 'last_name',
+            message: "What is the employee's last name?",
+          },
+          {
+            type: 'list',
+            name: 'role',
+            message: 'Select Role:',
+            choices: roles,
+          },
+        ])
+        .then((results) => {
+          const { first_name, last_name, role } = results
+          connection
+            .promise()
+            .query('SELECT first_name, id FROM employees')
+            .then((rows) => {
+              const employeeList = rows[0].map((row) => {
+                return {
+                  name: row.first_name,
+                  value: row.id,
+                }
+              })
+              employeeList.push({ name: 'none', value: null })
+              inquirer
+                .prompt([
+                  {
+                    type: 'list',
+                    name: 'manager_id',
+                    message: "Choose the employee's manager",
+                    choices: employeeList,
+                  },
+                ])
+                .then((newEmployee) => {
+                  const employee = {
+                    first_name: first_name,
+                    last_name: last_name,
+                    role_id: role,
+                    manager_id: newEmployee.manager_id,
+                  }
+                  connection
+                    .promise()
+                    .query('INSERT INTO employees SET ?', employee)
+                })
+                .then(() => {
+                  console.log(`\n Employee added. \n`)
+                  viewAllEmployees()
+                })
+            })
+        })
     })
 }
 
@@ -171,10 +230,6 @@ addRole = () => {
 // add a role
 // enter the name, salary, and department for the role
 // that role is added to the database
-
-// add an employee
-// enter the employee’s first name, last name, role, and manager
-// that employee is added to the database
 
 // update an employee role
 // prompted to select an employee to update and their new role
