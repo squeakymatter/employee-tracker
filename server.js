@@ -265,10 +265,6 @@ const updateEmployeeRole = function () {
           value: row.id,
         }
       })
-      console.log(
-        'this is the entire employeeList and the employees.id',
-        employeeList
-      )
       inquirer
         .prompt([
           {
@@ -280,7 +276,6 @@ const updateEmployeeRole = function () {
         ])
         .then((res) => {
           selectedId = res.name_update
-          console.log('this is the selected user Id', selectedId)
           connection
             .promise()
             .query('SELECT title, id FROM roles')
@@ -301,7 +296,6 @@ const updateEmployeeRole = function () {
                   },
                 ])
                 .then((result) => {
-                  console.log('result', result.role_id)
                   connection
                     .promise()
                     .query('UPDATE employees SET role_id = ? WHERE id = ?', [
