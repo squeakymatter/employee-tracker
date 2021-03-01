@@ -36,10 +36,10 @@ function promptUserAction() {
         'View All Departments',
         'View All Roles',
         'View All Employees',
-        'Add a New Department',
-        'Add a New Role',
-        'Add a New Employee',
-        'Update an Employee Role',
+        'Add New Department',
+        'Add New Role',
+        'Add New Employee',
+        'Update Employee Role',
         'Exit Employee Tracker',
       ],
     })
@@ -55,16 +55,16 @@ function promptUserAction() {
         case 'View All Employees':
           viewAllEmployees()
           break
-        case 'Add a New Department':
+        case 'Add New Department':
           addDepartment()
           break
-        case 'Add a New Role':
+        case 'Add New Role':
           addRole()
           break
-        case 'Add a New Employee':
+        case 'Add New Employee':
           addEmployee()
           break
-        case 'Update an Employee Role':
+        case 'Update Employee Role':
           updateEmployeeRole()
           break
         case 'Exit Employee Tracker':
