@@ -2,6 +2,9 @@
 const mysql = require('mysql2')
 const inquirer = require('inquirer')
 const cTable = require('console.table')
+const figlet = require('figlet')
+const chalk = require('chalk')
+
 // create the connection to database
 const connection = mysql.createConnection({
   host: 'localhost',
@@ -14,6 +17,11 @@ const connection = mysql.createConnection({
 connection.connect((err) => {
   if (err) throw err
   console.log('connected as id ' + connection.threadId + '\n')
+  console.log(
+    chalk.blue(
+      figlet.textSync('Employee\n\n Tracker', { horizontalLayout: 'full' })
+    )
+  )
   promptUserAction()
 })
 
