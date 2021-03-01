@@ -27,8 +27,9 @@ function promptUserAction() {
         'View All Departments',
         'View All Roles',
         'View All Employees',
-        'Add a Role',
-        'Add an Employee',
+        'Add a New Department',
+        'Add a New Role',
+        'Add a New Employee',
         'Update an Employee Role',
         'Exit Employee Tracker',
       ],
@@ -45,16 +46,18 @@ function promptUserAction() {
         case 'View All Employees':
           viewAllEmployees()
           break
-        case 'Add a Role':
+        case 'Add a New Department':
+          addDepartment()
+          break
+        case 'Add a New Role':
           addRole()
           break
-        case 'Add an Employee':
-          console.log('Add an employee')
+        case 'Add a New Employee':
           addEmployee()
           break
         case 'Update an Employee Role':
           // updateEmployeeRole();
-          console.log('update employee role')
+          console.log('Update employee role')
           break
         case 'Exit Employee Tracker':
           console.log('Thanks for using the Employee Tracker.')
@@ -227,9 +230,37 @@ const addEmployee = function () {
 // enter the name of the department
 // that department is added to the database
 
-// add a role
-// enter the name, salary, and department for the role
-// that role is added to the database
+const addDepartment = function () {
+  connection.promise()
+  inquirer
+    .prompt([
+      {
+        type: 'input',
+        name: 'dept_name',
+        message: "Enter new department's name:",
+      },
+    ])
+    .then((newDepartment) => {
+      console.log(newDepartment)
+      connection.query(
+        'INSERT INTO departments SET ?',
+        {
+          name: newDepartment.dept_name,
+        },
+        function (error) {
+          if (error) throw error
+          console.log('\n Added New Department \n')
+          viewAllDepartments()
+        }
+      )
+      //   connection.promise().query('INSERT INTO roles SET ?', newRole)
+      // })
+      // .then(() => {
+      //   viewAllRoles()
+      //   promptUserAction()
+      // })
+    })
+}
 
 // update an employee role
 // prompted to select an employee to update and their new role
