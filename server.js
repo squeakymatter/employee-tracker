@@ -227,7 +227,6 @@ const addDepartment = function () {
       },
     ])
     .then((newDepartment) => {
-      console.log(newDepartment)
       connection.query(
         'INSERT INTO departments SET ?',
         {
@@ -235,7 +234,7 @@ const addDepartment = function () {
         },
         function (error) {
           if (error) throw error
-          console.log('\n Added New Department \n')
+          console.log('\n Added new department. \n')
           viewAllDepartments()
         }
       )
