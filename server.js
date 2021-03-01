@@ -56,13 +56,11 @@ function promptUserAction() {
           addEmployee()
           break
         case 'Update an Employee Role':
-          // updateEmployeeRole();
-          console.log('Update employee role')
+          updateEmployeeRole()
           break
         case 'Exit Employee Tracker':
           console.log('Thanks for using the Employee Tracker.')
           connection.end()
-        // break
       }
     })
 }
@@ -110,7 +108,6 @@ viewAllEmployees = () => {
 
 //add a role
 // enter the name, salary, and department for the role and that role is added to the database
-
 const addRole = function () {
   connection
     .promise()
@@ -188,11 +185,13 @@ const addEmployee = function () {
           const { first_name, last_name, role } = results
           connection
             .promise()
-            .query('SELECT first_name, id FROM employees')
+            .query(
+              `SELECT CONCAT(first_name, ' ', last_name) AS Manager, id FROM employees`
+            )
             .then((rows) => {
               const employeeList = rows[0].map((row) => {
                 return {
-                  name: row.first_name,
+                  name: row.Manager,
                   value: row.id,
                 }
               })
@@ -229,7 +228,6 @@ const addEmployee = function () {
 // add a department
 // enter the name of the department
 // that department is added to the database
-
 const addDepartment = function () {
   connection.promise()
   inquirer
@@ -265,3 +263,61 @@ const addDepartment = function () {
 // update an employee role
 // prompted to select an employee to update and their new role
 //this information is updated in the database
+const updateEmployeeRole = function () {
+  //prompt inquirer 'Select an employee to update their role'
+  //choices: show list of existing employees
+  //prompt "What is the employee's new role?"
+  //choices: list of available roles
+  connection
+    .promise()
+    .query('SELECT first_name, id FROM employees')
+    .then((rows) => {
+      const employeeList = rows[0].map((row) => {
+        return {
+          name: row.first_name,
+          value: row.id,
+        }
+      })
+      inquirer
+        .prompt([
+          {
+            type: 'list',
+            name: 'first_name',
+            message: 'Select an employee to update:',
+            choices: employeeList,
+          },
+        ])
+        .then((res) => {
+          const employeeName = res.first_name
+          connection
+            .promise()
+            .query('SELECT title, id FROM roles')
+            .then((rows) => {
+              const rolesList = rows[0].map((row) => {
+                return {
+                  name: row.title,
+                  value: row.id,
+                }
+              })
+              inquirer
+                .prompt([
+                  {
+                    type: 'list',
+                    name: 'role_id',
+                    message: "What is the employee's new role?",
+                    choices: rolesList,
+                  },
+                ])
+                .then((result) => {
+                  connection
+                    .promise()
+                    .query('UPDATE employees SET role_id = ? WHERE id = ?', [
+                      1,
+                      employeeName,
+                    ])
+                    .then(() => startQuestion())
+                })
+            })
+        })
+    })
+}
