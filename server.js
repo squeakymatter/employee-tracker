@@ -4,6 +4,7 @@ const inquirer = require('inquirer')
 const cTable = require('console.table')
 const figlet = require('figlet')
 const chalk = require('chalk')
+const { clear } = require('console')
 
 // create the connection to database
 const connection = mysql.createConnection({
@@ -67,13 +68,14 @@ function promptUserAction() {
           updateEmployeeRole()
           break
         case 'Exit Employee Tracker':
+          console.clear()
           console.log('Thanks for using the Employee Tracker.')
           connection.end()
       }
     })
 }
 
-viewAllDepartments = () => {
+const viewAllDepartments = () => {
   connection.query('SELECT * FROM departments', function (err, results) {
     if (err) throw err
     const table = cTable.getTable('All Departments', results)
@@ -82,7 +84,7 @@ viewAllDepartments = () => {
   })
 }
 
-viewAllRoles = () => {
+const viewAllRoles = () => {
   let query = `
   SELECT roles.id AS 'ID', roles.title AS 'Job Title', departments.name AS 'Department', roles.salary AS 'Salary'
   FROM roles
@@ -95,7 +97,7 @@ viewAllRoles = () => {
     promptUserAction()
   })
 }
-viewAllEmployees = () => {
+const viewAllEmployees = () => {
   let query = `
   SELECT e.id, e.first_name AS "First Name", e.last_name AS "Last Name", roles.title AS "Job Title", departments.name AS "Department", FORMAT(roles.salary, 'C') Salary, CONCAT(m.first_name, ' ', m.last_name) AS Manager
   FROM employees e
@@ -112,6 +114,7 @@ viewAllEmployees = () => {
 }
 
 const addRole = function () {
+  console.clear()
   connection
     .promise()
     .query('SELECT name, id FROM departments')
@@ -146,7 +149,6 @@ const addRole = function () {
         })
         .then(() => {
           viewAllRoles()
-          promptUserAction()
         })
     })
 }
@@ -225,7 +227,6 @@ const addEmployee = function () {
     })
 }
 const addDepartment = function () {
-  connection.promise()
   inquirer
     .prompt([
       {
@@ -249,6 +250,9 @@ const addDepartment = function () {
     })
 }
 const updateEmployeeRole = function () {
+  console.clear()
+  let selectedId = ''
+  let updatedRoleId = ''
   connection
     .promise()
     .query(
@@ -261,17 +265,22 @@ const updateEmployeeRole = function () {
           value: row.id,
         }
       })
+      console.log(
+        'this is the entire employeeList and the employees.id',
+        employeeList
+      )
       inquirer
         .prompt([
           {
             type: 'list',
-            name: 'first_name',
+            name: 'name_update',
             message: 'Select an employee to update:',
             choices: employeeList,
           },
         ])
         .then((res) => {
-          const employeeName = res.first_name
+          selectedId = res.name_update
+          console.log('this is the selected user Id', selectedId)
           connection
             .promise()
             .query('SELECT title, id FROM roles')
@@ -292,16 +301,16 @@ const updateEmployeeRole = function () {
                   },
                 ])
                 .then((result) => {
+                  console.log('result', result.role_id)
                   connection
                     .promise()
                     .query('UPDATE employees SET role_id = ? WHERE id = ?', [
-                      1,
-                      employeeName,
+                      result.role_id,
+                      selectedId,
                     ])
                     .then(() => {
                       console.log('\n Role updated. \n')
                       viewAllEmployees()
-                      promptUserAction()
                     })
                 })
             })
