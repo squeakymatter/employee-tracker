@@ -74,7 +74,6 @@ viewAllDepartments = () => {
   })
 }
 
-// All Roles: job title, role id, the department that role belongs to, and the salary for that role
 viewAllRoles = () => {
   let query = `
   SELECT roles.id AS 'ID', roles.title AS 'Job Title', departments.name AS 'Department', roles.salary AS 'Salary'
@@ -88,8 +87,6 @@ viewAllRoles = () => {
     promptUserAction()
   })
 }
-
-// All Employees: employee ids, first names, last names, job titles, departments, salaries, and managers
 viewAllEmployees = () => {
   let query = `
   SELECT e.id, e.first_name AS "First Name", e.last_name AS "Last Name", roles.title AS "Job Title", departments.name AS "Department", FORMAT(roles.salary, 'C') Salary, CONCAT(m.first_name, ' ', m.last_name) AS Manager
@@ -106,8 +103,6 @@ viewAllEmployees = () => {
   })
 }
 
-//add a role
-// enter the name, salary, and department for the role and that role is added to the database
 const addRole = function () {
   connection
     .promise()
@@ -148,9 +143,6 @@ const addRole = function () {
     })
 }
 
-// add an employee
-// enter the employee’s first name, last name, role, and manager
-// that employee is added to the database
 const addEmployee = function () {
   connection
     .promise()
@@ -224,10 +216,6 @@ const addEmployee = function () {
         })
     })
 }
-
-// add a department
-// enter the name of the department
-// that department is added to the database
 const addDepartment = function () {
   connection.promise()
   inquirer
@@ -251,30 +239,18 @@ const addDepartment = function () {
           viewAllDepartments()
         }
       )
-      //   connection.promise().query('INSERT INTO roles SET ?', newRole)
-      // })
-      // .then(() => {
-      //   viewAllRoles()
-      //   promptUserAction()
-      // })
     })
 }
-
-// update an employee role
-// prompted to select an employee to update and their new role
-//this information is updated in the database
 const updateEmployeeRole = function () {
-  //prompt inquirer 'Select an employee to update their role'
-  //choices: show list of existing employees
-  //prompt "What is the employee's new role?"
-  //choices: list of available roles
   connection
     .promise()
-    .query('SELECT first_name, id FROM employees')
+    .query(
+      'SELECT CONCAT(first_name, " ", last_name) AS Employee, id FROM employees'
+    )
     .then((rows) => {
       const employeeList = rows[0].map((row) => {
         return {
-          name: row.first_name,
+          name: row.Employee,
           value: row.id,
         }
       })
@@ -315,7 +291,11 @@ const updateEmployeeRole = function () {
                       1,
                       employeeName,
                     ])
-                    .then(() => startQuestion())
+                    .then(() => {
+                      console.log('\n Role updated. \n')
+                      viewAllEmployees()
+                      promptUserAction()
+                    })
                 })
             })
         })
