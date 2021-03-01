@@ -3,6 +3,9 @@
 ## Description
 
 Employee tracker CLI application developed with node.js, mySQL2, inquirer, figlet, and chalk.
+
+Link to video walkthrough: https://youtu.be/El3Ar58veH8
+
 ![mockup](./mockup.png)
 
 ---
